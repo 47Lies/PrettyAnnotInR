@@ -60,9 +60,9 @@ if(!dir.exists(Dir)){
 	#library("KEGGREST")
 }
 
-if(file.exist(paste(Dir,"GO.BP.GeneList.txt",sep="")) & file.exist(paste(Dir,"GO.BP.Names.txt",sep="")) &
-file.exist(paste(Dir,"GO.MF.GeneList.txt",sep="")) & file.exist(paste(Dir,"GO.MF.Names.txt",sep="")) &
-file.exist(paste(Dir,"GO.CC.GeneList.txt",sep="")) & file.exist(paste(Dir,"GO.CC.Names.txt",sep=""))){
+if(file.exists(paste(Dir,"GO.BP.GeneList.txt",sep="")) & file.exists(paste(Dir,"GO.BP.Names.txt",sep="")) &
+file.exists(paste(Dir,"GO.MF.GeneList.txt",sep="")) & file.exists(paste(Dir,"GO.MF.Names.txt",sep="")) &
+file.exists(paste(Dir,"GO.CC.GeneList.txt",sep="")) & file.exists(paste(Dir,"GO.CC.Names.txt",sep=""))){
 	BP2Genes<-read.table(paste(Dir,"GO.BP.GeneList.txt",sep=""),header=TRUE,sep="\t")
 	CC2Genes<-read.table(paste(Dir,"GO.CC.GeneList.txt",sep=""),header=TRUE,sep="\t")
 	MF2Genes<-read.table(paste(Dir,"GO.MF.GeneList.txt",sep=""),header=TRUE,sep="\t")
@@ -90,16 +90,19 @@ file.exist(paste(Dir,"GO.CC.GeneList.txt",sep="")) & file.exist(paste(Dir,"GO.CC
 	GoTerms.MF<-unique(GoTerms.MF[,c("go_id","Term")])
 	MF2Genes<-Genes2GO[Genes2GO$Ontology=="MF",c("go_id","Gene_Symbol")]
 	write.table(MF2Genes,paste(Dir,"GO.MF.GeneList.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
+	write.table(GoTerms.MF,paste(Dir,"GO.MF.Names.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
 
 	#Cellular Component
 	GoTerms.CC<-GoTerms[GoTerms$Ontology=="CC",]
 	GoTerms.CC<-unique(GoTerms.CC[,c("go_id","Term")])
 	CC2Genes<-Genes2GO[Genes2GO$Ontology=="CC",c("go_id","Gene_Symbol")]
 	write.table(CC2Genes,paste(Dir,"GO.CC.GeneList.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
+	write.table(GoTerms.CC,paste(Dir,"GO.CC.Names.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
+
 }
 
 #Reactome Part
-if(file.exist(paste(Dir,"Reactome.DB.GeneList.txt",sep="")) & file.exist(paste(Dir,"Reactome.DB.Names.txt",sep=""))){
+if(file.exists(paste(Dir,"Reactome.DB.GeneList.txt",sep="")) & file.exists(paste(Dir,"Reactome.DB.Names.txt",sep=""))){
 	R2Genes<-read.table(paste(Dir,"Reactome.DB.GeneList.txt",sep=""),header=TRUE,sep="\t")
 	ReactomeTerms<-read.table(paste(Dir,"Reactome.DB.Names.txt",sep=""),header=TRUE,sep="\t",quote="\"")
 }else{
@@ -116,7 +119,7 @@ if(file.exist(paste(Dir,"Reactome.DB.GeneList.txt",sep="")) & file.exist(paste(D
 
 
 #Kegg Part
-if(file.exist(paste(Dir,"Kegg.GeneList.txt",sep="")) & file.exist(paste(Dir,"Kegg.Names.txt",sep=""))){
+if(file.exists(paste(Dir,"Kegg.GeneList.txt",sep="")) & file.exists(paste(Dir,"Kegg.Names.txt",sep=""))){
 	Kegg2Genes<-read.table(paste(Dir,"Kegg.GeneList.txt",sep=""),header=TRUE,sep="\t")
 	KeggTerms<-read.table(paste(Dir,"Kegg.Names.txt",sep=""),header=TRUE,sep="\t",quote="\"")
 }else{
@@ -131,7 +134,7 @@ if(file.exist(paste(Dir,"Kegg.GeneList.txt",sep="")) & file.exist(paste(Dir,"Keg
 }
 
 #Panther Part
-if(file.exist(paste(Dir,"Panther.GeneList.txt",sep="")) & file.exist(paste(Dir,"Panther.Names.txt",sep=""))){
+if(file.exists(paste(Dir,"Panther.GeneList.txt",sep="")) & file.exists(paste(Dir,"Panther.Names.txt",sep=""))){
 	P2Genes<-read.table(paste(Dir,"Panther.GeneList.txt",sep=""),header=TRUE,sep="\t")
 	PTerms<-read.table(paste(Dir,"Panther.Names.txt",sep=""),header=TRUE,sep="\t",quote="\"")
 }else{
