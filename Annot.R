@@ -1,8 +1,8 @@
-library("DOSE")#the EnrichR function
-library("xlsx")#output xlsx
-library("clusterProfiler")#test the enrich list
-library("org.Hs.eg.db")#The main database all identifier with every one
-library("STRINGdb")#String Database
+library("DOSE",verbose=FALSE,quietly=TRUE)#the EnrichR function
+library("xlsx",verbose=FALSE,quietly=TRUE)#output xlsx
+library("clusterProfiler",verbose=FALSE,quietly=TRUE)#test the enrich list
+library("org.Hs.eg.db",verbose=FALSE,quietly=TRUE)#The main database all identifier with every one
+library("STRINGdb",verbose=FALSE,quietly=TRUE)#String Database
 
 ########################################################################
 #	ABSTRACT:
@@ -168,6 +168,12 @@ if(file.exists(paste(Dir,"Panther.GeneList.txt",sep="")) & file.exists(paste(Dir
 #			R format: vector of string
 #			Case sensitive
 #
+#		-BackGround: gene of Uninterest to be set as background
+#			format of genes: official gene symbol i.e. the name of the gene on NCBI
+#			R format: vector of string
+#			Case sensitive
+
+#
 #		-PopName: Name of the tested list of gene
 #			will be use as root name for all the outputed files either .txt or .xlsx
 #			R format: String
@@ -191,19 +197,19 @@ if(file.exists(paste(Dir,"Panther.GeneList.txt",sep="")) & file.exists(paste(Dir
 #	Return
 #		Nothing
 #
-AllTestGoKeggPanther<-function(GeneList,PopName,outputXLSX=FALSE) {
+AllTestGoKeggPanther<-function(GeneList,BackGround=NULL,PopName,outputXLSX=FALSE){
 	if(outputXLSX){if(file.exists(paste(PopName,".xlsx",sep=""))){file.remove(paste(PopName,".xlsx",sep=""))}}
-	BP<-enricher(GeneList,TERM2GENE=BP2Genes,TERM2NAME=GoTerms.BP,
+	BP<-enricher(GeneList,universe=BackGround,TERM2GENE=BP2Genes,TERM2NAME=GoTerms.BP,
 		minGSSize=1,pAdjustMethod="fdr")
-	MF<-enricher(GeneList,TERM2GENE=MF2Genes,TERM2NAME=GoTerms.MF,
+	MF<-enricher(GeneList,universe=BackGround,TERM2GENE=MF2Genes,TERM2NAME=GoTerms.MF,
 		minGSSize=1,pAdjustMethod="fdr")
-	CC<-enricher(GeneList,TERM2GENE=CC2Genes,TERM2NAME=GoTerms.CC,
+	CC<-enricher(GeneList,universe=BackGround,TERM2GENE=CC2Genes,TERM2NAME=GoTerms.CC,
 		minGSSize=1,pAdjustMethod="fdr")
-	Kegg<-enricher(GeneList,TERM2GENE=Kegg2Genes,TERM2NAME=KeggTerms,
+	Kegg<-enricher(GeneList,universe=BackGround,TERM2GENE=Kegg2Genes,TERM2NAME=KeggTerms,
 		minGSSize=1,pAdjustMethod="fdr")
-	Panther<-enricher(GeneList,TERM2GENE=P2Genes,TERM2NAME=PTerms,
+	Panther<-enricher(GeneList,universe=BackGround,TERM2GENE=P2Genes,TERM2NAME=PTerms,
 		minGSSize=1,pAdjustMethod="fdr")
-	Reactome<-enricher(GeneList,TERM2GENE=R2Genes,TERM2NAME=ReactomeTerms,
+	Reactome<-enricher(GeneList,universe=BackGround,TERM2GENE=R2Genes,TERM2NAME=ReactomeTerms,
 		minGSSize=1,pAdjustMethod="fdr")
 	DESCRIPTION<-vector()
 	if(dim(data.frame(BP))[1]>0){
@@ -285,6 +291,11 @@ AllTestGoKeggPanther<-function(GeneList,PopName,outputXLSX=FALSE) {
 #			R format: vector of string
 #			Case sensitive
 #
+#		-BackGround: gene of Uninterest to be set as background
+#			format of genes: official gene symbol i.e. the name of the gene on NCBI
+#			R format: vector of string
+#			Case sensitive
+#
 #		-Ressource: Name of the tested ressource
 #			R format: String among a predefined vector of possibles values
 #				BP Gene Ontology biological process
@@ -313,27 +324,41 @@ AllTestGoKeggPanther<-function(GeneList,PopName,outputXLSX=FALSE) {
 #				Count: how many genes are present in both GeneList & the GeneSet
 #
 OneTestGoKeggPanther<-function(GeneList,
-Ressource=c("BP","MF","CC","KEGG","reactome","Panther")){
+Ressource=c("BP","MF","CC","KEGG","reactome","Panther"),BackGround=NULL,AdjPvalCutoff=1,pretty=FALSE){
+	#return(matrix(0,3,3))
 	if(Ressource=="BP"){
-		Enrich<-enricher(GeneList,TERM2GENE=BP2Genes,TERM2NAME=GoTerms.BP,
-			minGSSize=1,pAdjustMethod="fdr")
+		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=BP2Genes,TERM2NAME=GoTerms.BP,
+			minGSSize=1,pAdjustMethod="fdr",pvalueCutoff=AdjPvalCutoff)
 	}else if(Ressource=="MF"){
-		Enrich<-enricher(GeneList,TERM2GENE=MF2Genes,TERM2NAME=GoTerms.MF,
-			minGSSize=1,pAdjustMethod="fdr")
+		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=MF2Genes,TERM2NAME=GoTerms.MF,
+			minGSSize=1,pAdjustMethod="fdr",pvalueCutoff=AdjPvalCutoff)
 	}else if(Ressource=="CC"){
-		Enrich<-enricher(GeneList,TERM2GENE=CC2Genes,TERM2NAME=GoTerms.CC,
-			minGSSize=1,pAdjustMethod="fdr")
+		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=CC2Genes,TERM2NAME=GoTerms.CC,
+			minGSSize=1,pAdjustMethod="fdr",pvalueCutoff=AdjPvalCutoff)
 	}else if(Ressource=="KEGG"){
-		Enrich<-enricher(GeneList,TERM2GENE=Kegg2Genes,TERM2NAME=KeggTerms,
-			minGSSize=1,pAdjustMethod="fdr")
+		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=Kegg2Genes,TERM2NAME=KeggTerms,
+			minGSSize=1,pAdjustMethod="fdr",pvalueCutoff=AdjPvalCutoff)
 	}else if(Ressource=="Panther"){
-		Enrich<-enricher(GeneList,TERM2GENE=P2Genes,TERM2NAME=PTerms,
-			minGSSize=1,pAdjustMethod="fdr")
+		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=P2Genes,TERM2NAME=PTerms,
+			minGSSize=1,pAdjustMethod="fdr",pvalueCutoff=AdjPvalCutoff)
 	}else if(Ressource=="reactome"){
-		Enrich<-enricher(GeneList,TERM2GENE=R2Genes,TERM2NAME=ReactomeTerms,
-			minGSSize=1,pAdjustMethod="fdr")
+		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=R2Genes,TERM2NAME=ReactomeTerms,
+			minGSSize=1,pAdjustMethod="fdr",pvalueCutoff=AdjPvalCutoff)
 	}
-	return(data.frame(Enrich))
+	if(dim(Enrich)[1]>0 & !is.null(Enrich)){
+		Enrich<-data.frame(Enrich)
+		rownames(Enrich)<-NULL
+		if(pretty){
+			Enrich$pvalue<-formatC(Enrich$pvalue,format = "e", digits = 2)
+			Enrich$p.adjust<-formatC(Enrich$p.adjust,format = "e", digits = 2)
+			Enrich$qvalue<-formatC(Enrich$qvalue,format = "e", digits = 2)
+			Enrich$geneID<-gsub("/"," ",Enrich$geneID)
+			Enrich<-Enrich[order(Enrich$Count,decreasing=TRUE),]
+		}
+		return(Enrich)
+	}else{
+		return(NULL)
+	}
 }
 
 ########################################################################
@@ -360,12 +385,13 @@ Ressource=c("BP","MF","CC","KEGG","reactome","Panther")){
 PlotString<-function(GeneList){
 	stringDB<-STRINGdb$new(version="10",species=9606,score_threshold=0, input_directory="" )
 	Mapped <- stringDB$map( data.frame("gene"=GeneList),
-	"gene", removeUnmappedRows = TRUE )
+	"gene", removeUnmappedRows = TRUE ,quiet=TRUE)
 	if(dim(Mapped)[1]>400){
 		Mapped<-Mapped[1:400,]
 		Title<-"400 Firsts"
-		stringDB$plot_network(Mapped$STRING_id)
+		stringDB$plot_network(Mapped$STRING_id,add_link=TRUE,add_summary=TRUE)
+	}else{
+		stringDB$plot_network(Mapped$STRING_id,add_link=TRUE,add_summary=TRUE)
 	}
-	stringDB$plot_network(Mapped$STRING_id,add_link=FALSE,add_summary=FALSE)
 }
 
