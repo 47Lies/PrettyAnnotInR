@@ -1,8 +1,8 @@
 library("DOSE",verbose=FALSE,quietly=TRUE)#the EnrichR function
 library("xlsx",verbose=FALSE,quietly=TRUE)#output xlsx
-library("clusterProfiler",verbose=FALSE,quietly=TRUE)#test the enrich list
 library("org.Hs.eg.db",verbose=FALSE,quietly=TRUE)#The main database all identifier with every one
 library("STRINGdb",verbose=FALSE,quietly=TRUE)#String Database
+library("clusterProfiler",verbose=FALSE,quietly=TRUE)#test the enrich list
 
 ########################################################################
 #	ABSTRACT:
@@ -198,19 +198,65 @@ if(file.exists(paste(Dir,"Panther.GeneList.txt",sep="")) & file.exists(paste(Dir
 #		Nothing
 #
 AllTestGoKeggPanther<-function(GeneList,BackGround=NULL,PopName,outputXLSX=FALSE){
-	if(outputXLSX){if(file.exists(paste(PopName,".xlsx",sep=""))){file.remove(paste(PopName,".xlsx",sep=""))}}
-	BP<-enricher(GeneList,universe=BackGround,TERM2GENE=BP2Genes,TERM2NAME=GoTerms.BP,
-		minGSSize=1,pAdjustMethod="fdr")
-	MF<-enricher(GeneList,universe=BackGround,TERM2GENE=MF2Genes,TERM2NAME=GoTerms.MF,
-		minGSSize=1,pAdjustMethod="fdr")
-	CC<-enricher(GeneList,universe=BackGround,TERM2GENE=CC2Genes,TERM2NAME=GoTerms.CC,
-		minGSSize=1,pAdjustMethod="fdr")
-	Kegg<-enricher(GeneList,universe=BackGround,TERM2GENE=Kegg2Genes,TERM2NAME=KeggTerms,
-		minGSSize=1,pAdjustMethod="fdr")
-	Panther<-enricher(GeneList,universe=BackGround,TERM2GENE=P2Genes,TERM2NAME=PTerms,
-		minGSSize=1,pAdjustMethod="fdr")
-	Reactome<-enricher(GeneList,universe=BackGround,TERM2GENE=R2Genes,TERM2NAME=ReactomeTerms,
-		minGSSize=1,pAdjustMethod="fdr")
+  if (outputXLSX) {
+    if (file.exists(paste(PopName, ".xlsx", sep = ""))) {
+      file.remove(paste(PopName, ".xlsx", sep = ""))
+    }
+  }
+  BP <-
+    clusterProfiler::enricher(
+      GeneList,
+      universe = BackGround,
+      TERM2GENE = BP2Genes,
+      TERM2NAME = GoTerms.BP,
+      minGSSize = 1,
+      pAdjustMethod = "fdr"
+    )
+  MF <-
+    clusterProfiler::enricher(
+      GeneList,
+      universe = BackGround,
+      TERM2GENE = MF2Genes,
+      TERM2NAME = GoTerms.MF,
+      minGSSize = 1,
+      pAdjustMethod = "fdr"
+    )
+  CC <-
+    clusterProfiler::enricher(
+      GeneList,
+      universe = BackGround,
+      TERM2GENE = CC2Genes,
+      TERM2NAME = GoTerms.CC,
+      minGSSize = 1,
+      pAdjustMethod = "fdr"
+    )
+  Kegg <-
+    clusterProfiler::enricher(
+      GeneList,
+      universe = BackGround,
+      TERM2GENE = Kegg2Genes,
+      TERM2NAME = KeggTerms,
+      minGSSize = 1,
+      pAdjustMethod = "fdr"
+    )
+  Panther <-
+    clusterProfiler::enricher(
+      GeneList,
+      universe = BackGround,
+      TERM2GENE = P2Genes,
+      TERM2NAME = PTerms,
+      minGSSize = 1,
+      pAdjustMethod = "fdr"
+    )
+  Reactome <-
+    clusterProfiler::enricher(
+      GeneList,
+      universe = BackGround,
+      TERM2GENE = R2Genes,
+      TERM2NAME = ReactomeTerms,
+      minGSSize = 1,
+      pAdjustMethod = "fdr"
+    )
 	DESCRIPTION<-vector()
 	if(dim(data.frame(BP))[1]>0){
 		write.table(BP[order(BP$Count,decreasing=TRUE),],
@@ -313,15 +359,15 @@ AllTestGoKeggPanther<-function(GeneList,BackGround=NULL,PopName,outputXLSX=FALSE
 #			-can be an empty data frame
 #			-one line per significant gene set
 #			-columns:
-#				ID: Code name of the tested gene set
-#				Description: human readable name og the tested gene set
-#				GeneRatio: [in Gene List and also in gene set]/[in Gene List]
-#				BgRatio: [not in Gene List but in gene set]/[all the genes of the all the gene sets]
-#				pvalue: pvalue of the hypergeometric test
-#				p.adjust: ajusted pvalue using FDR
-#				qvalue:
-#				geneID:Name of the genes in Gene List ans also in the Gene Set
-#				Count: how many genes are present in both GeneList & the GeneSet
+#				1 ID: Code name of the tested gene set
+#				2 Description: human readable name og the tested gene set
+#				3 GeneRatio: [in Gene List and also in gene set]/[in Gene List]
+#				4 BgRatio: [not in Gene List but in gene set]/[all the genes of the all the gene sets]
+#				5 pvalue: pvalue of the hypergeometric test
+#				6 p.adjust: ajusted pvalue using FDR
+#				7 qvalue:
+#				8 geneID:Name of the genes in Gene List ans also in the Gene Set
+#				9 Count: how many genes are present in both GeneList & the GeneSet
 #
 OneTestGoKeggPanther<-function(GeneList,
 Ressource=c("BP","MF","CC","KEGG","reactome","Panther"),BackGround=NULL,AdjPvalCutoff=1,pretty=FALSE){
@@ -354,6 +400,15 @@ Ressource=c("BP","MF","CC","KEGG","reactome","Panther"),BackGround=NULL,AdjPvalC
 			Enrich$qvalue<-formatC(Enrich$qvalue,format = "e", digits = 2)
 			Enrich$geneID<-gsub("/"," ",Enrich$geneID)
 			Enrich<-Enrich[order(Enrich$Count,decreasing=TRUE),]
+			Enrich<-Enrich[,c("ID",
+			                  "Description",
+			                  "GeneRatio",
+			                  "BgRatio",
+			                  "pvalue",
+			                  "p.adjust",
+			                  "qvalue",
+			                  "geneID",
+			                  "Count")]
 		}
 		return(Enrich)
 	}else{
