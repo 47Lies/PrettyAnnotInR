@@ -1,0 +1,252 @@
+---
+params:
+  GeneList: !r c("PENK","APOE","SSSDDF","DRD1")
+  NAME: Annotation
+  VERBOSE: no
+---
+<!--   -->
+<!-- Rmarkdown skeleton type -->
+<!-- depends on: -->
+<!-- -R librairies -->
+<!-- --rmarkdown -->
+<!-- --DT will be used for their data table -->
+<!-- -Other Ressources -->
+<!-- --/bioinfo/users/ltaing/DATA_TMP/ltaing/PrettyAnnotInR/Annot.R -->
+<!-- ---Absolute path of a R file -->
+<!-- ---R Script that will create at the same location of the WD a ressource directory if need be of some ressources to be computed -->
+<!-- Parameters -->
+<!-- GeneList: the list of gene to annotate -->
+<!--   Vector of official gene symbol -->
+<!--   -can contained duplicated entries. -->
+<!--   -will discard duplicated -->
+<!-- NAME: The title of the H1 html chunck -->
+<!--   Scalar of the title -->
+<!--   -character -->
+<!-- VERBOSE: boolean for outputing or not the R session and the passed parameters -->
+<!-- Usage: -->
+<!-- in a R session case a) -->
+
+<!-- library("rmarkdown") -->
+<!-- render(input="AnnotationSktln.Rmd", -->
+<!--       output_format="html_document", -->
+<!--       output_file="MyOutputfile.html", -->
+<!--       params=list( -->
+<!--         GeneList=ListOfGenesToAnnotate, #Vector of Official Gene Symbol as used in org.Hs.eg.db -->
+<!--         VERBOSE=FALSE, # Boolean -->
+<!--         NAME="The name of the chunk" # scalar of a string that will be use as title for the chunk -->
+<!--       )) -->
+
+<!-- in a Rmd case b)  -->
+<!-- the params list must be initialized before calling the .Rmd as a child -->
+
+<!-- ```{r} -->
+<!-- I<-read.table("annotation.txt",header=TRUE,sep="\t",quote="\"") -->
+<!-- params <- list(GeneList = as.vector(I$GENE), -->
+<!--                VERBOSE=FALSE, NAME="Patrick's list") -->
+<!-- ``` -->
+<!-- ```{r child="AnnotationSkltn.Rmd"} -->
+<!-- ``` -->
+
+<!-- ```{r JustMyImagination} -->
+<!-- params <- list(GeneList = c("PENK","DRD1","DRD2","APOE"), -->
+<!--                VERBOSE=FALSE, NAME="Memories of day's gone") -->
+<!-- ``` -->
+<!-- ```{r child="AnnotationSkltn.Rmd"} -->
+<!-- ``` -->
+<!-- ---> 
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = params$VERBOSE,
+                      warning=params$VERBOSE,
+                      fig.width = 7,
+                      fig.align="center")
+library("DT")
+source("/bioinfo/users/ltaing/DATA_TMP/ltaing/PrettyAnnotInR/Annot.R")
+MyGeneList<-unique(params$GeneList)
+```
+
+```{r results='asis',echo=FALSE}
+cat("# ",params$NAME," {.tabset}\n\n",sep="")
+```
+## Description {.tabset}
+
+### Resume
+
+Gene list composed of `r length(params$GeneList)` entries.
+Among them `r sum(MyGeneList %in% BP2Genes$Gene_Symbol)` (`r round( sum( MyGeneList %in% BP2Genes$Gene_Symbol )/length( MyGeneList ), 2 )*100`%) have an entry in Homo Sapiens gene ontology biological process database.
+
+Among them `r sum(MyGeneList %in% CC2Genes$Gene_Symbol)` (`r round( sum( MyGeneList %in% CC2Genes$Gene_Symbol )/length( MyGeneList ), 2 )*100`%) have an entry in Homo Sapiens gene ontology cellular component database.
+
+Among them `r sum(MyGeneList %in% MF2Genes$Gene_Symbol)` (`r round( sum( MyGeneList %in% MF2Genes$Gene_Symbol )/length( MyGeneList ), 2 )*100`%) have an entry in Homo Sapiens gene ontology molecular function database.
+
+Among them `r sum(MyGeneList %in% Kegg2Genes$Gene_Symbol)` (`r round( sum( MyGeneList %in% Kegg2Genes$Gene_Symbol )/length( MyGeneList ), 2 )*100`%) have an entry in Homo Sapiens KEGG database.
+
+Among them `r sum(MyGeneList %in% R2Genes$Gene_Symbol)` (`r round( sum( MyGeneList %in% R2Genes$Gene_Symbol )/length( MyGeneList ), 2 )*100`%) have an entry in Homo Sapiens reactome database.
+
+Among them `r sum(MyGeneList %in% P2Genes$Gene_Symbol)` (`r round( sum( MyGeneList %in% P2Genes$Gene_Symbol )/length( MyGeneList ), 2 )*100`%) have an entry in Homo Sapiens panther database.
+
+### Detail
+
+```{r echo=FALSE}
+#Create a matrix for each gene symbol to know if it is present inside each ressource database
+#and some summary description
+Matrix <- matrix(0, ncol = 6, nrow = length(MyGeneList))
+rownames(Matrix) <- MyGeneList
+colnames(Matrix) <- c("BP", "MF", "CC", "KEGG", "Panther", "reactome")
+Matrix[MyGeneList %in% BP2Genes$Gene_Symbol, "BP"] <- 1
+Matrix[MyGeneList %in% CC2Genes$Gene_Symbol, "CC"] <- 1
+Matrix[MyGeneList %in% MF2Genes$Gene_Symbol, "MF"] <- 1
+Matrix[MyGeneList %in% Kegg2Genes$Gene_Symbol, "KEGG"] <- 1
+Matrix[MyGeneList %in% P2Genes$Gene_Symbol, "Panther"] <- 1
+Matrix[MyGeneList %in% R2Genes$Gene_Symbol, "reactome"] <- 1
+Matrix[Matrix == 0] <- "absent"
+Matrix[Matrix == 1] <- "present"
+DF <- data.frame(Matrix)
+DF$Gene <- rownames(DF)
+#Some kind of sql select to use the org.Hs.eg.db
+DF$Description <- mapIds(
+  org.Hs.eg.db,
+  keys = as.vector(DF$Gene),
+  keytype = "SYMBOL",
+  column = "GENENAME"
+)
+DF <- DF[, c("Gene",
+             "Description",
+             "BP",
+             "MF",
+             "CC",
+             "KEGG",
+             "Panther",
+             "reactome")]
+#Pretty output using java script
+DT::datatable(
+  DF,
+  rownames = FALSE,
+  filter = 'top',
+  options = list(autoWidth = TRUE)
+)
+
+```
+
+## Biological process
+
+```{r echo=FALSE}
+#Biological process results from the annot.R script
+ResultsBP<-OneTestGoKeggPanther(GeneList=MyGeneList,
+                              Ressource = "BP",
+                              pretty=TRUE)
+#datatable(ResultsBP,rownames=FALSE,extensions = "Buttons",
+#          options=list(dom='Bfrtip',buttons=I('colvis')))
+
+DT::datatable(ResultsBP, #the dataframe to be output
+          rownames=FALSE, # hidding the rownames
+          extensions = 'Responsive', # allowing the hidding of certain columns
+          options=list(columnDefs=list(list(className="none",targets=8) #hidding the eight column
+                                  )
+                      )
+)
+
+
+#datatable(ResultsBP, extensions = 'Responsive')
+```
+
+## Molecular function
+
+```{r echo=FALSE}
+ResultsMF<-OneTestGoKeggPanther(GeneList=MyGeneList,
+                              Ressource = "MF",
+                              pretty=TRUE)
+datatable(ResultsMF,
+          rownames=FALSE,
+          extensions = 'Responsive',
+          options=list(columnDefs=list(list(className="none",targets=8)
+                                  )
+                      )
+)
+```
+
+## Celular component
+
+```{r echo=FALSE}
+ResultsCC<-OneTestGoKeggPanther(GeneList=MyGeneList,
+                              Ressource = "CC",
+                              pretty=TRUE)
+datatable(ResultsCC,
+          rownames=FALSE,
+          extensions = 'Responsive',
+          options=list(columnDefs=list(list(className="none",targets=8)
+                                  )
+                      )
+)
+```
+
+## Kegg
+
+```{r echo=FALSE}
+ResultsKegg<-OneTestGoKeggPanther(GeneList=MyGeneList,
+                              Ressource = "KEGG",
+                              pretty=TRUE)
+datatable(ResultsKegg,
+          rownames=FALSE,
+          extensions = 'Responsive',
+          options=list(columnDefs=list(list(className="none",targets=8)
+                                  )
+                      )
+)
+```
+
+## Panther
+
+```{r echo=FALSE}
+ResultsPnthr<-OneTestGoKeggPanther(GeneList=MyGeneList,
+                              Ressource = "Panther",
+                              pretty=TRUE)
+datatable(ResultsPnthr,
+          rownames=FALSE,
+          extensions = 'Responsive',
+          options=list(columnDefs=list(list(className="none",targets=8)
+                                  )
+                      )
+)
+```
+
+## Reactome
+
+```{r echo=FALSE}
+ResultsRctm<-OneTestGoKeggPanther(GeneList=MyGeneList,
+                              Ressource = "reactome",
+                              pretty=TRUE)
+datatable(ResultsRctm,
+          rownames=FALSE,
+          extensions = 'Responsive',
+          options=list(columnDefs=list(list(className="none",targets=8)
+                                  )
+                      )
+)
+```
+
+<!-- if the verbose boolean is set to true then compute the next chunks -->
+<!-- in this case it will output some supplementary informations for the  -->
+
+```{r eval=params$VERBOSE,results="asis"}
+cat("# Infos {.tabset}
+
+## Parameters
+")
+```
+
+```{r eval=params$VERBOSE}
+PARAMETERS<-unlist(params)
+PARAMETERS.DF<-data.frame(PARAMETER=names(PARAMETERS),VALUE=PARAMETERS)
+datatable(PARAMETERS.DF,row.names = FALSE)
+```
+
+```{r eval=params$VERBOSE,results="asis"}
+cat("## Session
+")
+```
+```{r eval=params$VERBOSE}
+sessionInfo()
+```
+
+
