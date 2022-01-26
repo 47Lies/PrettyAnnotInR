@@ -1,6 +1,6 @@
 library("DOSE",verbose=FALSE,quietly=TRUE)#the EnrichR function
 library("xlsx",verbose=FALSE,quietly=TRUE)#output xlsx
-library("org.Hs.eg.db",verbose=FALSE,quietly=TRUE)#The main database all identifier with every one
+library("org.Mm.eg.db",verbose=FALSE,quietly=TRUE)#The main database all identifier with every one
 library("STRINGdb",verbose=FALSE,quietly=TRUE)#String Database
 library("clusterProfiler",verbose=FALSE,quietly=TRUE)#test the enrich list
 
@@ -74,8 +74,8 @@ file.exists(paste(Dir,"GO.CC.GeneList.txt",sep="")) & file.exists(paste(Dir,"GO.
 }else{
 	#Gene Ontology part
 	GoTerms<-toTable(GO.db::GOTERM)
-	Genes2GO<-toTable(org.Hs.egGO2ALLEGS)
-	Genes2GO$Gene_Symbol<-mapIds(org.Hs.eg.db,keys=as.character(Genes2GO$gene_id),
+	Genes2GO<-toTable(org.Mm.egGO2ALLEGS)
+	Genes2GO$Gene_Symbol<-mapIds(org.Mm.eg.db,keys=as.character(Genes2GO$gene_id),
 		column="SYMBOL",keytype="ENTREZID",multiVals="first")
 	
 	#Biological Process
@@ -109,7 +109,7 @@ if(file.exists(paste(Dir,"Reactome.DB.GeneList.txt",sep="")) & file.exists(paste
 	library("reactome.db")#kegg database to extract the reactome data gene set & set Name
 	ReactomeTerms<-toTable(reactome.db::reactomePATHID2NAME)
 	ReactomeEntrez<-toTable(reactome.db::reactomeEXTID2PATHID)
-	ReactomeEntrez$Gene_Symbol<-mapIds(org.Hs.eg.db,keys=as.character(ReactomeEntrez$gene_id),
+	ReactomeEntrez$Gene_Symbol<-mapIds(org.Mm.eg.db,keys=as.character(ReactomeEntrez$gene_id),
 	                                   column="SYMBOL",keytype="ENTREZID",multiVals="first")
 	R2Genes<-ReactomeEntrez[,c("DB_ID","Gene_Symbol")]
 	ReactomeTerms<-ReactomeTerms[ReactomeTerms$DB_ID %in% unique(ReactomeEntrez$DB_ID),]
@@ -124,9 +124,9 @@ if(file.exists(paste(Dir,"Kegg.GeneList.txt",sep="")) & file.exists(paste(Dir,"K
 	KeggTerms<-read.table(paste(Dir,"Kegg.Names.txt",sep=""),header=TRUE,sep="\t",quote="\"")
 }else{
 	library("KEGG.db")#kegg database to extract the kegg Name
-	Genes2Kegg<-toTable(org.Hs.egPATH)
+	Genes2Kegg<-toTable(org.Mm.egPATH)
 	KeggTerms<-toTable(KEGG.db::KEGGPATHID2NAME)
-	Genes2Kegg$Gene_Symbol<-mapIds(org.Hs.eg.db,keys=as.character(Genes2Kegg$gene_id),
+	Genes2Kegg$Gene_Symbol<-mapIds(org.Mm.eg.db,keys=as.character(Genes2Kegg$gene_id),
 		column="SYMBOL",keytype="ENTREZID",multiVals="first")
 	Kegg2Genes<-Genes2Kegg[,c("path_id","Gene_Symbol")]
 	write.table(Kegg2Genes,paste(Dir,"Kegg.GeneList.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
@@ -141,7 +141,7 @@ if(file.exists(paste(Dir,"Panther.GeneList.txt",sep="")) & file.exists(paste(Dir
 	library("PANTHER.db")#Panther DB to extract the Panther DB data gene set & set Name
 	PantherInfo<-select(x=PANTHER.db,keys="HUMAN",columns=c("ENTREZ","PATHWAY_TERM","PATHWAY_ID"), keytype="SPECIES")
 	PantherInfo<-PantherInfo[!is.na(PantherInfo$PATHWAY_ID),]
-	PantherInfo$Gene_Symbol<-as.vector(mapIds(org.Hs.eg.db,keys=as.character(PantherInfo$ENTREZ),
+	PantherInfo$Gene_Symbol<-as.vector(mapIds(org.Mm.eg.db,keys=as.character(PantherInfo$ENTREZ),
 	                                column="SYMBOL",keytype="ENTREZID",multiVals="first"))
 	P2Genes<-unique(PantherInfo[,c("PATHWAY_ID","Gene_Symbol")])
 	P2Genes<- apply(P2Genes,2,as.character)
