@@ -119,19 +119,19 @@ if(file.exists(paste(Dir,"Reactome.DB.GeneList.txt",sep="")) & file.exists(paste
 
 
 #Kegg Part
-if(file.exists(paste(Dir,"Kegg.GeneList.txt",sep="")) & file.exists(paste(Dir,"Kegg.Names.txt",sep=""))){
-	Kegg2Genes<-read.table(paste(Dir,"Kegg.GeneList.txt",sep=""),header=TRUE,sep="\t")
-	KeggTerms<-read.table(paste(Dir,"Kegg.Names.txt",sep=""),header=TRUE,sep="\t",quote="\"")
-}else{
-	library("KEGG.db")#kegg database to extract the kegg Name
-	Genes2Kegg<-toTable(org.Mm.egPATH)
-	KeggTerms<-toTable(KEGG.db::KEGGPATHID2NAME)
-	Genes2Kegg$Gene_Symbol<-mapIds(org.Mm.eg.db,keys=as.character(Genes2Kegg$gene_id),
-		column="SYMBOL",keytype="ENTREZID",multiVals="first")
-	Kegg2Genes<-Genes2Kegg[,c("path_id","Gene_Symbol")]
-	write.table(Kegg2Genes,paste(Dir,"Kegg.GeneList.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
-	write.table(KeggTerms,paste(Dir,"Kegg.Names.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
-}
+#if(file.exists(paste(Dir,"Kegg.GeneList.txt",sep="")) & file.exists(paste(Dir,"Kegg.Names.txt",sep=""))){
+#	Kegg2Genes<-read.table(paste(Dir,"Kegg.GeneList.txt",sep=""),header=TRUE,sep="\t")
+#	KeggTerms<-read.table(paste(Dir,"Kegg.Names.txt",sep=""),header=TRUE,sep="\t",quote="\"")
+#}else{
+#	library("KEGG.db")#kegg database to extract the kegg Name
+#	Genes2Kegg<-toTable(org.Mm.egPATH)
+#	KeggTerms<-toTable(KEGG.db::KEGGPATHID2NAME)
+#	Genes2Kegg$Gene_Symbol<-mapIds(org.Mm.eg.db,keys=as.character(Genes2Kegg$gene_id),
+#		column="SYMBOL",keytype="ENTREZID",multiVals="first")
+#	Kegg2Genes<-Genes2Kegg[,c("path_id","Gene_Symbol")]
+#	write.table(Kegg2Genes,paste(Dir,"Kegg.GeneList.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
+#	write.table(KeggTerms,paste(Dir,"Kegg.Names.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
+#}
 
 #Panther Part
 if(file.exists(paste(Dir,"Panther.GeneList.txt",sep="")) & file.exists(paste(Dir,"Panther.Names.txt",sep=""))){
@@ -230,15 +230,15 @@ AllTestGoKeggPanther<-function(GeneList,BackGround=NULL,PopName,outputXLSX=FALSE
       minGSSize = 1,
       pAdjustMethod = "fdr"
     )
-  Kegg <-
-    clusterProfiler::enricher(
-      GeneList,
-      universe = BackGround,
-      TERM2GENE = Kegg2Genes,
-      TERM2NAME = KeggTerms,
-      minGSSize = 1,
-      pAdjustMethod = "fdr"
-    )
+#  Kegg <-
+#    clusterProfiler::enricher(
+#      GeneList,
+#      universe = BackGround,
+#      TERM2GENE = Kegg2Genes,
+#      TERM2NAME = KeggTerms,
+#      minGSSize = 1,
+#      pAdjustMethod = "fdr"
+#    )
   Panther <-
     clusterProfiler::enricher(
       GeneList,
@@ -288,16 +288,16 @@ AllTestGoKeggPanther<-function(GeneList,BackGround=NULL,PopName,outputXLSX=FALSE
 		}
 		DESCRIPTION<-c(DESCRIPTION,as.vector(MF$Description))
 	}
-	if(dim(data.frame(Kegg))[1]>0){
-		write.table(Kegg[order(Kegg$Count,decreasing=TRUE),],
-			paste(PopName,".Kegg.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
-		if(outputXLSX){
-			xlsx::write.xlsx(x=Kegg[order(Kegg$Count,decreasing=TRUE),],
-				file=paste(PopName,".xlsx",sep=""), sheetName="KEGG", 
-				col.names=TRUE, row.names=FALSE, append=TRUE)
-		}
-		DESCRIPTION<-c(DESCRIPTION,as.vector(Kegg$Description))
-	}
+#	if(dim(data.frame(Kegg))[1]>0){
+#		write.table(Kegg[order(Kegg$Count,decreasing=TRUE),],
+#			paste(PopName,".Kegg.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
+#		if(outputXLSX){
+#			xlsx::write.xlsx(x=Kegg[order(Kegg$Count,decreasing=TRUE),],
+#				file=paste(PopName,".xlsx",sep=""), sheetName="KEGG", 
+#				col.names=TRUE, row.names=FALSE, append=TRUE)
+#		}
+#		DESCRIPTION<-c(DESCRIPTION,as.vector(Kegg$Description))
+#	}
 	if(dim(data.frame(Panther))[1]>0){
 		write.table(Panther[order(Panther$Count,decreasing=TRUE),],
 			paste(PopName,".Panther.txt",sep=""),sep="\t",quote=FALSE,row.names=FALSE)
@@ -370,7 +370,7 @@ AllTestGoKeggPanther<-function(GeneList,BackGround=NULL,PopName,outputXLSX=FALSE
 #				9 Count: how many genes are present in both GeneList & the GeneSet
 #
 OneTestGoKeggPanther<-function(GeneList,
-Ressource=c("BP","MF","CC","KEGG","reactome","Panther"),BackGround=NULL,AdjPvalCutoff=1,pretty=FALSE){
+Ressource=c("BP","MF","CC","reactome","Panther"),BackGround=NULL,AdjPvalCutoff=1,pretty=FALSE){
 	#return(matrix(0,3,3))
 	if(Ressource=="BP"){
 		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=BP2Genes,TERM2NAME=GoTerms.BP,
