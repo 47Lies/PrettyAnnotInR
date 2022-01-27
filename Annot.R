@@ -406,9 +406,8 @@ Ressource=c("BP","MF","CC","reactome","Panther"),BackGround=NULL,AdjPvalCutoff=1
 			                  "BgRatio",
 			                  "pvalue",
 			                  "p.adjust",
-			                  "qvalue",
-			                  "geneID",
-			                  "Count")]
+			                  "Count",
+			                  "geneID")]
 		}
 		return(Enrich)
 	}else{
