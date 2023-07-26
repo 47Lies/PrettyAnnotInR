@@ -395,9 +395,9 @@ Ressource=c("BP","MF","CC","reactome","Panther"),BackGround=NULL,AdjPvalCutoff=1
 		Enrich<-data.frame(Enrich)
 		rownames(Enrich)<-NULL
 		if(pretty){
-			Enrich$pvalue<-formatC(Enrich$pvalue,format = "e", digits = 2)
-			Enrich$p.adjust<-formatC(Enrich$p.adjust,format = "e", digits = 2)
-			Enrich$qvalue<-formatC(Enrich$qvalue,format = "e", digits = 2)
+			Enrich$pvalue[!is.na(Enrich$pvalue)]<-formatC(Enrich$pvalue[!is.na(Enrich$pvalue)],format = "e", digits = 2)
+			Enrich$p.adjust[!is.na(Enrich$p.adjust)]<-formatC(Enrich$p.adjust[!is.na(Enrich$p.adjust)],format = "e", digits = 2)
+			Enrich$qvalue[!is.na(Enrich$qvalue)]<-formatC(Enrich$qvalue[!is.na(Enrich$qvalue)],format = "e", digits = 2)
 			Enrich$geneID<-gsub("/"," ",Enrich$geneID)
 			Enrich<-Enrich[order(Enrich$Count,decreasing=TRUE),]
 			Enrich<-Enrich[,c("ID",
