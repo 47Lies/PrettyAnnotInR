@@ -1,8 +1,10 @@
-library("DOSE",verbose=FALSE,quietly=TRUE)#the EnrichR function
-library("xlsx",verbose=FALSE,quietly=TRUE)#output xlsx
-library("org.Mm.eg.db",verbose=FALSE,quietly=TRUE)#The main database all identifier with every one
-library("STRINGdb",verbose=FALSE,quietly=TRUE)#String Database
-library("clusterProfiler",verbose=FALSE,quietly=TRUE)#test the enrich list
+library("DOSE",verbose=FALSE,quietly=TRUE) #the EnrichR function
+library("xlsx",verbose=FALSE,quietly=TRUE) #output xlsx
+library("org.Mm.eg.db",verbose=FALSE,quietly=TRUE) #The main database all identifier with every one
+library("STRINGdb",verbose=FALSE,quietly=TRUE) #String Database
+library("clusterProfiler",verbose=FALSE,quietly=TRUE) #test the enrich list
+
+TAXONOMY_NUMBER<-10090
 
 ########################################################################
 #	ABSTRACT:
@@ -59,6 +61,37 @@ if(!dir.exists(Dir)){
 	dir.create(Dir,recursive = TRUE)
 	#library("KEGGREST")
 }
+
+download.file(
+  url = "https://downloads.thebiogrid.org/Download/BioGRID/Release-Archive/BIOGRID-4.4.231/BIOGRID-ALL-4.4.231.tab3.zip",
+  destfile = "BIOGRID-ALL-4.4.231.tab3.zip")
+unzip(
+  zipfile = "BIOGRID-ALL-4.4.231.tab3.zip")
+BioGrid<-read.table("BIOGRID-ALL-4.4.231.tab3.txt",
+                    header=TRUE,
+                    sep="\t",
+                    quote="\"",
+                    comment.char ="$")
+BioGrid<-BioGrid[
+  BioGrid$Organism.ID.Interactor.A==TAXONOMY_NUMBER,]
+BioGrid<-BioGrid[
+  BioGrid$Organism.ID.Interactor.B==TAXONOMY_NUMBER,]
+dim(BioGrid)
+
+BioGrid$Gene_Symbol.A<-mapIds(org.Mm.eg.db,keys=as.character(BioGrid$Entrez.Gene.Interactor.A),
+                             column="SYMBOL",keytype="ENTREZID",multiVals="first")
+BioGrid$Gene_Symbol.B<-mapIds(org.Mm.eg.db,keys=as.character(BioGrid$Entrez.Gene.Interactor.B),
+                              column="SYMBOL",keytype="ENTREZID",multiVals="first")
+BioGrid<-BioGrid[,c("Gene_Symbol.A","Gene_Symbol.B")]
+BioGrid<-rbind(BioGrid,BioGrid[,c("Gene_Symbol.B","Gene_Symbol.A")])
+BioGrid<-BioGrid[order(BioGrid$Gene_Symbol.B),]
+BioGrid2Gene<-BioGrid
+BioGrid2Terms<-unique(BioGrid$Gene_Symbol.A)
+BioGrid2Terms<-BioGrid2Terms[!is.na(BioGrid2Terms)]
+BG2Terms<-data.frame(
+  Interactor=BioGrid2Terms,
+  Term=unlist(mapIds(org.Mm.eg.db,keys=as.character(BioGrid2Terms),
+         column="GENENAME",keytype="SYMBOL",multiVals="first")))
 
 if(file.exists(paste(Dir,"GO.BP.GeneList.txt",sep="")) & file.exists(paste(Dir,"GO.BP.Names.txt",sep="")) &
 file.exists(paste(Dir,"GO.MF.GeneList.txt",sep="")) & file.exists(paste(Dir,"GO.MF.Names.txt",sep="")) &
