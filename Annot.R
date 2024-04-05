@@ -183,7 +183,7 @@ if(file.exists(paste(Dir,"Panther.GeneList.txt",sep="")) & file.exists(paste(Dir
 	PTerms<-read.table(paste(Dir,"Panther.Names.txt",sep=""),header=TRUE,sep="\t",quote="\"")
 }else{
 	library("PANTHER.db")#Panther DB to extract the Panther DB data gene set & set Name
-	PantherInfo<-select(x=PANTHER.db,keys="MOUSE",columns=c("ENTREZ","PATHWAY_TERM","PATHWAY_ID"), keytype="SPECIES")
+	PantherInfo<-AnnotationDbi::select(x=PANTHER.db,keys="MOUSE",columns=c("ENTREZ","PATHWAY_TERM","PATHWAY_ID"), keytype="SPECIES")
 	PantherInfo<-PantherInfo[!is.na(PantherInfo$PATHWAY_ID),]
 	PantherInfo$Gene_Symbol<-as.vector(mapIds(org.Mm.eg.db,keys=as.character(PantherInfo$ENTREZ),
 	                                column="SYMBOL",keytype="ENTREZID",multiVals="first"))
