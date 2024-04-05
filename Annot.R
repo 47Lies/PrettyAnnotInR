@@ -62,11 +62,17 @@ if(!dir.exists(Dir)){
 	#library("KEGGREST")
 }
 
-download.file(
-  url = "https://downloads.thebiogrid.org/Download/BioGRID/Release-Archive/BIOGRID-4.4.231/BIOGRID-ALL-4.4.231.tab3.zip",
-  destfile = "BIOGRID-ALL-4.4.231.tab3.zip")
-unzip(
-  zipfile = "BIOGRID-ALL-4.4.231.tab3.zip")
+if(!file.exists("ENdb_enhancer.txt"){
+  download.file(
+    url="https://bio.liclab.net/ENdb/file/download/ENdb_enhancer.txt",
+    destfile = "ENdb_enhancer.txt")
+}
+
+if(!file.exists("BIOGRID-ALL-4.4.231.tab3.txt")) {
+  download.file(url = "https://downloads.thebiogrid.org/Download/BioGRID/Release-Archive/BIOGRID-4.4.231/BIOGRID-ALL-4.4.231.tab3.zip",
+                destfile = "BIOGRID-ALL-4.4.231.tab3.zip")
+  unzip(zipfile = "BIOGRID-ALL-4.4.231.tab3.zip")
+}
 BioGrid<-read.table("BIOGRID-ALL-4.4.231.tab3.txt",
                     header=TRUE,
                     sep="\t",
@@ -403,7 +409,7 @@ AllTestGoKeggPanther<-function(GeneList,BackGround=NULL,PopName,outputXLSX=FALSE
 #				9 Count: how many genes are present in both GeneList & the GeneSet
 #
 OneTestGoKeggPanther<-function(GeneList,
-Ressource=c("BP","MF","CC","reactome","Panther"),BackGround=NULL,AdjPvalCutoff=1,pretty=FALSE){
+Ressource=c("BP","MF","CC","reactome","Panther","biogrid"),BackGround=NULL,AdjPvalCutoff=1,pretty=FALSE){
 	#return(matrix(0,3,3))
 	if(Ressource=="BP"){
 		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=BP2Genes,TERM2NAME=GoTerms.BP,
@@ -423,7 +429,11 @@ Ressource=c("BP","MF","CC","reactome","Panther"),BackGround=NULL,AdjPvalCutoff=1
 	}else if(Ressource=="reactome"){
 		Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=R2Genes,TERM2NAME=ReactomeTerms,
 			minGSSize=1,pAdjustMethod="fdr",pvalueCutoff=AdjPvalCutoff)
+	}else if(Ressource=="biogrid"){
+	  Enrich<-enricher(GeneList,universe=BackGround,TERM2GENE=BioGrid2Gene,TERM2NAME=BG2Terms,
+	                   minGSSize=1,pAdjustMethod="fdr",pvalueCutoff=AdjPvalCutoff)
 	}
+  
 	if(dim(Enrich)[1]>0 & !is.null(Enrich)){
 		Enrich<-data.frame(Enrich)
 		rownames(Enrich)<-NULL
