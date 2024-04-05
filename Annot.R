@@ -62,17 +62,22 @@ if(!dir.exists(Dir)){
 	#library("KEGGREST")
 }
 
-if(!file.exists("ENdb_enhancer.txt"){
+if(!file.exists("ENdb_enhancer.txt")){
   download.file(
     url="https://bio.liclab.net/ENdb/file/download/ENdb_enhancer.txt",
     destfile = "ENdb_enhancer.txt")
 }
+Endb<-read.table("ENdb_enhancer.txt",sep="\t",comment.char = "@",quote = "\"",header = TRUE)
+
+
 
 if(!file.exists("BIOGRID-ALL-4.4.231.tab3.txt")) {
   download.file(url = "https://downloads.thebiogrid.org/Download/BioGRID/Release-Archive/BIOGRID-4.4.231/BIOGRID-ALL-4.4.231.tab3.zip",
                 destfile = "BIOGRID-ALL-4.4.231.tab3.zip")
   unzip(zipfile = "BIOGRID-ALL-4.4.231.tab3.zip")
 }
+
+
 BioGrid<-read.table("BIOGRID-ALL-4.4.231.tab3.txt",
                     header=TRUE,
                     sep="\t",
